@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tagged Notes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-title {
+            font-weight: bold;
+        }
+        .note-date {
+            font-size: 12px;
+            color: #777;
+        }
+        .note-content {
+            margin-top: 10px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .delete-button, .view-button {
+            background-color: #474545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .view-button {
+            background-color: #050708;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="tag-title">Tagged Notes</h1>
+        <ul id="note-list"></ul>
+    </div>
+    <script>
+        function loadTaggedNotes() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tag = urlParams.get('tag');
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const noteList = document.getElementById('note-list');
+            const tagTitle = document.getElementById('tag-title');
+
+            tagTitle.textContent = `Notes tagged with "${tag}"`;
+            noteList.innerHTML = '';
+
+            const filteredNotes = notes.filter(note => note.tags.includes(tag));
+
+            filteredNotes.forEach((note, index) => {
+                const li = document.createElement('li');
+                const noteContent = note.note.length > 10 ? note.note.substring(0, 10) + '...' : note.note;
+                li.innerHTML = `
+                    <div class="note-header">
+                        <span class="note-title">${note.title}</span>
+                        <span class="note-date">${note.date}</span>
+                    </div>
+                    <div class="note-content">${noteContent}</div>
+                    <div class="buttons">
+                        ${note.note.length > 10 ? `<button class="view-button" onclick="viewNoteByIndex(${index}, '${tag}')">더보기</button>` : ''}
+                        <button class="delete-button" onclick="deleteNoteByIndex(${index}, '${tag}')">Delete</button>
+                    </div>
+                `;
+                noteList.appendChild(li);
+            });
+        }
+
+        function deleteNoteByIndex(index, tag) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const filteredNotes = notes.filter(note => note.tags.includes(tag));
+            const noteToDelete = filteredNotes[index];
+            const noteIndex = notes.indexOf(noteToDelete);
+            notes.splice(noteIndex, 1);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadTaggedNotes();
+            loadCategories();
+        }
+
+        function viewNoteByIndex(index, tag) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const filteredNotes = notes.filter(note => note.tags.includes(tag));
+            const noteToView = filteredNotes[index];
+            const noteIndex = notes.indexOf(noteToView);
+            window.location.href = `view-note.html?index=${noteIndex}`;
+        }
+
+        function loadCategories() {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const categories = new Set();
+            notes.forEach(note => note.tags.forEach(tag => categories.add(tag)));
+
+            const categoryList = document.getElementById('category-list');
+            categoryList.innerHTML = '<li><a href="#" onclick="filterNotes(\'all\')">All</a></li>';
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="tagged-notes.html?tag=${encodeURIComponent(category)}">${category}</a>`;
+                categoryList.appendChild(li);
+            });
+        }
+
+        window.onload = loadTaggedNotes;
+    </script>
+</body>
+</html>
