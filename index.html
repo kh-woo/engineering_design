@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메모장</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background: #333;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar li a {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .title {
+            position: absolute;
+            top: 20px;
+            font-size: 100px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+        }
+        h1 .add-icon {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-title {
+            font-weight: bold;
+        }
+        .note-date {
+            font-size: 12px;
+            color: #777;
+        }
+        .note-content {
+            margin-top: 10px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .delete-button, .view-button, .more-button {
+            background-color: #474545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .view-button {
+            background-color: #050708;
+        }
+        .more-button {
+            background-color: #050708;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Categories</h2>
+        <ul id="category-list">
+            <li><a href="#" onclick="filterNotes('all')">All</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <div class="title">Note</div>
+        <div class="container">
+            <h1>
+                Record
+                <span class="add-icon" onclick="window.location.href='new-note.html'">+</span>
+            </h1>
+            <ul id="note-list"></ul>
+            <button id="more-button" class="more-button" onclick="window.location.href='all-notes.html'" style="display: none;">더보기</button>
+        </div>
+    </div>
+    <script>
+        function loadNotes(filterTag = 'all') {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const noteList = document.getElementById('note-list');
+            noteList.innerHTML = '';
+
+            const filteredNotes = filterTag === 'all' ? notes : notes.filter(note => note.tags.includes(filterTag));
+
+            filteredNotes.slice(0, 5).forEach((note, index) => {
+                const li = document.createElement('li');
+                const noteContent = note.note.length > 10 ? note.note.substring(0, 10) + '...' : note.note;
+                li.innerHTML = `
+                    <div class="note-header">
+                        <span class="note-title">${note.title}</span>
+                        <span class="note-date">${note.date}</span>
+                    </div>
+                    <div class="note-content">${noteContent}</div>
+                    <div class="buttons">
+                        ${note.note.length > 10 ? `<button class="view-button" onclick="viewNoteByIndex(${index}, '${filterTag}')">더보기</button>` : ''}
+                        <button class="delete-button" onclick="deleteNoteByIndex(${index}, '${filterTag}')">Delete</button>
+                    </div>
+                `;
+                noteList.appendChild(li);
+            });
+
+            const moreButton = document.getElementById('more-button');
+            if (filteredNotes.length > 5) {
+                moreButton.style.display = 'block';
+            } else {
+                moreButton.style.display = 'none';
+            }
+        }
+
+        function deleteNoteByIndex(index, filterTag) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const filteredNotes = filterTag === 'all' ? notes : notes.filter(note => note.tags.includes(filterTag));
+            const noteToDelete = filteredNotes[index];
+            const noteIndex = notes.indexOf(noteToDelete);
+            notes.splice(noteIndex, 1);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadNotes(filterTag);
+            loadCategories();
+        }
+
+        function viewNoteByIndex(index, filterTag) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const filteredNotes = filterTag === 'all' ? notes : notes.filter(note => note.tags.includes(filterTag));
+            const noteToView = filteredNotes[index];
+            const noteIndex = notes.indexOf(noteToView);
+            window.location.href = `view-note.html?index=${noteIndex}`;
+        }
+
+        function loadCategories() {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const categories = new Set();
+            notes.forEach(note => note.tags.forEach(tag => categories.add(tag)));
+
+            const categoryList = document.getElementById('category-list');
+            categoryList.innerHTML = '<li><a href="#" onclick="filterNotes(\'all\')">All</a></li>';
+            categories.forEach(category => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="tagged-notes.html?tag=${encodeURIComponent(category)}">${category}</a>`;
+                categoryList.appendChild(li);
+            });
+        }
+
+        window.onload = () => {
+            loadNotes();
+            loadCategories();
+        };
+    </script>
+</body>
+</html>
