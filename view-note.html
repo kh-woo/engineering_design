@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Note</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .note-content {
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>View Note</h1>
+        <div id="note-content" class="note-content"></div>
+        <a href="index.html" class="back-button">Back</a>
+    </div>
+    <script>
+        function getNote() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteIndex = urlParams.get('index');
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const note = notes[noteIndex];
+            if (note) {
+                document.getElementById('note-content').textContent = note.note;
+            } else {
+                document.getElementById('note-content').textContent = 'Note not found';
+            }
+        }
+
+        window.onload = getNote;
+    </script>
+</body>
+</html>
