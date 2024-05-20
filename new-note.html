@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Note</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        .buttons {
+            margin-top: 10px;
+            text-align: right;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.save {
+            background-color: #070807;
+            color: white;
+        }
+        button.cancel {
+            background-color: #474545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>New Note</h1>
+        <input type="text" id="title" placeholder="Title">
+        <textarea id="note" placeholder="Note"></textarea>
+        <input type="text" id="tags" placeholder="Tags (comma-separated)">
+        <div class="buttons">
+            <button class="save" onclick="saveNote()">저장</button>
+            <button class="cancel" onclick="window.location.href='index.html'">취소</button>
+        </div>
+    </div>
+    <script>
+        function saveNote() {
+            const title = document.getElementById('title').value;
+            const note = document.getElementById('note').value;
+            const tags = document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+            const date = new Date().toLocaleString();
+
+            if (title.trim() === '' || note.trim() === '') {
+                alert('Title and Note cannot be empty!');
+                return;
+            }
+
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const noteData = {
+                title: title,
+                note: note,
+                tags: tags,
+                date: date
+            };
+            notes.push(noteData);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
